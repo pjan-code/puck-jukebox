@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Puck Jukebox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Righteous&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#fbf1dc; --cream2:#f2e2c0; --ink:#1d1a17; --ink2:#3a332c;
+  --cherry:#d62839; --cherry-d:#9b1626;
+  --mint:#25b3a3; --mint-d:#147569;
+  --mustard:#f2b33d; --mustard-d:#b47a14;
+  --chrome-hi:#ffffff; --chrome-mid:#c3c9cf; --chrome-lo:#6b737b;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--cream); color:var(--ink);
+  font-family:Rubik,system-ui,sans-serif; min-height:100vh;
+  background-image:radial-gradient(rgba(214,40,57,.08) 2px,transparent 2.6px);
+  background-size:24px 24px;
+}
+button{font:inherit}
+.checker{height:26px;background:repeating-conic-gradient(var(--ink) 0 25%,#fff 0 50%) 0 0/26px 26px}
+
+/* ---------- Header / neon sign ---------- */
+header{
+  background:linear-gradient(180deg,#24201c,#141210);
+  padding:16px 24px 14px; display:flex; align-items:center; justify-content:space-between;
+  gap:16px; flex-wrap:wrap; border-bottom:6px solid var(--cherry);
+}
+.sign{font-family:Pacifico,cursive;font-size:clamp(34px,5vw,58px);line-height:1.15;color:#fff;
+  text-shadow:0 0 3px #fff,0 0 10px var(--cherry),0 0 22px var(--cherry),0 0 42px var(--cherry);
+  animation:flicker 7s infinite}
+@keyframes flicker{0%,92%,100%{opacity:1}93%{opacity:.55}94%{opacity:1}96%{opacity:.7}97%{opacity:1}}
+.sub{font-family:Righteous,sans-serif;color:var(--mint);letter-spacing:.28em;text-transform:uppercase;font-size:12px;
+  text-shadow:0 0 8px rgba(37,179,163,.75);margin-top:2px}
+.hdr-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{font-family:Righteous;font-size:13px;color:#fff;background:#2c2723;border:2px solid #4a423a;border-radius:999px;
+  padding:7px 14px;display:flex;align-items:center;gap:8px;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:50%;background:#777;flex:none}
+.dot.ok{background:#4be08a;box-shadow:0 0 8px #4be08a}
+.dot.bad{background:var(--cherry);box-shadow:0 0 8px var(--cherry)}
+.gear{cursor:pointer;background:var(--mustard);color:var(--ink);border:none;border-radius:999px;padding:9px 16px;
+  font-family:Righteous;font-size:14px;box-shadow:0 3px 0 var(--mustard-d)}
+.gear:active{transform:translateY(2px);box-shadow:0 1px 0 var(--mustard-d)}
+
+main{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+
+/* ---------- Now playing ---------- */
+.np{
+  background:var(--ink);color:#fff;border-radius:18px;padding:14px 20px;display:flex;gap:18px;align-items:center;
+  box-shadow:0 0 0 4px var(--chrome-hi),0 0 0 8px var(--chrome-mid),0 0 0 10px var(--chrome-lo),0 14px 24px rgba(0,0,0,.2);
+  margin:6px 6px 40px;
+}
+.np-label{font-family:Righteous;color:var(--mustard);letter-spacing:.2em;font-size:12px;text-transform:uppercase;white-space:nowrap}
+.np-body{flex:1;min-width:0}
+.np-title{font-family:Righteous;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-artist{color:#cfc6b8;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-bar{height:6px;background:#3d3631;border-radius:3px;margin-top:8px;overflow:hidden}
+.np-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cherry),var(--mustard))}
+.eq{display:flex;gap:3px;align-items:flex-end;height:26px;width:30px;flex:none}
+.eq span{flex:1;background:var(--mint);border-radius:2px;height:20%}
+.np.on .eq span{animation:eq .9s ease-in-out infinite}
+.np.on .eq span:nth-child(2){animation-delay:.2s}.np.on .eq span:nth-child(3){animation-delay:.45s}.np.on .eq span:nth-child(4){animation-delay:.1s}
+@keyframes eq{0%,100%{height:20%}50%{height:100%}}
+
+/* ---------- Sections ---------- */
+.section-title{display:flex;align-items:center;gap:14px;margin:0 0 22px}
+.section-title h2{margin:0;font-family:Pacifico;font-weight:400;font-size:30px;color:var(--cherry);text-shadow:2px 2px 0 #fff}
+.section-title::after{content:"";flex:1;height:4px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--ink) 0 12px,transparent 12px 20px)}
+.grid{display:grid;gap:34px;padding:8px}
+.music{grid-template-columns:repeat(3,1fr);margin-bottom:46px}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:34px}
+.team{background:var(--cream2);border-radius:26px;padding:20px 22px 28px;border:3px solid var(--ink);
+  box-shadow:6px 6px 0 var(--ink)}
+.team h3{margin:0 0 18px;font-family:Righteous;font-size:22px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.team h3 .pill{font-size:11px;letter-spacing:.2em;padding:4px 10px;border-radius:999px;color:#fff}
+.team.home h3 .pill{background:var(--cherry)} .team.away h3 .pill{background:var(--mint-d)}
+.team .grid{grid-template-columns:1fr 1fr;padding:6px}
+
+/* ---------- Jukebox buttons ---------- */
+.jb{
+  --c:var(--mustard);--cd:var(--mustard-d);
+  position:relative;cursor:pointer;border:none;border-radius:22px;text-align:left;color:#fff;
+  padding:20px 20px 18px;min-height:156px;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 42%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 10px,transparent 10px 20px),
+    linear-gradient(180deg,var(--c),var(--cd));
+  box-shadow:0 0 0 4px var(--chrome-hi),0 0 0 8px var(--chrome-mid),0 9px 0 8px var(--chrome-lo),0 18px 26px rgba(0,0,0,.28);
+  transition:transform .07s,box-shadow .07s,filter .2s;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.jb:hover{filter:brightness(1.06)}
+.jb:active,.jb.pressed{transform:translateY(6px);
+  box-shadow:0 0 0 4px var(--chrome-hi),0 0 0 8px var(--chrome-mid),0 3px 0 8px var(--chrome-lo),0 8px 14px rgba(0,0,0,.25)}
+.jb:focus-visible{outline:4px dashed var(--ink);outline-offset:14px}
+.jb.cherry{--c:#e2384a;--cd:var(--cherry-d)}
+.jb.mint{--c:#33c2b2;--cd:var(--mint-d)}
+.jb.big{min-height:190px}
+.jb .key{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,var(--cream) 55%,#d8c9a8);color:var(--ink);
+  display:grid;place-items:center;font-family:Righteous;font-size:18px;box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 -2px 0 rgba(0,0,0,.12)}
+.jb .kicker{font-family:Righteous;font-size:12px;letter-spacing:.2em;text-transform:uppercase;opacity:.92}
+.jb .title{font-family:Righteous;font-size:clamp(24px,2.6vw,34px);line-height:1.05;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.jb.big .title{font-size:clamp(34px,4vw,50px)}
+.jb .meta{font-size:13.5px;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.jb .meta b{font-weight:700}
+.jb.empty{filter:saturate(.25) brightness(.95)}
+.jb.empty .meta{font-style:italic}
+.jb .onair{position:absolute;top:16px;left:16px;font-family:Righteous;font-size:11px;letter-spacing:.2em;
+  background:var(--ink);color:var(--mustard);padding:4px 9px;border-radius:999px;display:none}
+.jb.playing .onair{display:block;animation:blink 1s steps(2) infinite}
+.jb.playing{box-shadow:0 0 0 4px var(--chrome-hi),0 0 0 8px var(--mustard),0 9px 0 8px var(--mustard-d),0 0 34px 10px rgba(242,179,61,.75)}
+@keyframes blink{50%{opacity:.35}}
+.jb.busy::after{content:"";position:absolute;inset:0;border-radius:22px;background:rgba(255,255,255,.18)}
+
+/* ---------- Transport ---------- */
+.transport{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:46px}
+.tbtn{cursor:pointer;border:3px solid var(--ink);border-radius:999px;padding:14px 26px;font-family:Righteous;font-size:18px;
+  background:#fff;color:var(--ink);box-shadow:0 5px 0 var(--ink);display:flex;align-items:center;gap:12px}
+.tbtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.tbtn kbd{font-family:Rubik;font-size:12px;background:var(--cream2);border:1px solid #bba985;border-radius:6px;padding:2px 7px}
+.tbtn.stop{background:var(--ink);color:#fff}
+.tbtn.stop kbd{background:#3a332c;border-color:#5a5047;color:#fff}
+
+footer{text-align:center;font-size:12.5px;color:#7a6c58;margin-top:34px}
+
+/* ---------- Settings dialog ---------- */
+dialog{border:none;padding:0;border-radius:22px;width:min(760px,94vw);max-height:92vh;background:var(--cream);color:var(--ink);
+  box-shadow:0 0 0 4px #fff,0 0 0 8px var(--chrome-mid),0 30px 70px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(20,16,12,.65)}
+.dlg-head{position:sticky;top:0;z-index:2;background:var(--ink);color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:5px solid var(--cherry)}
+.dlg-head h2{margin:0;font-family:Pacifico;font-weight:400;font-size:28px}
+.dlg-body{padding:6px 22px 26px}
+.close{cursor:pointer;background:var(--cherry);color:#fff;border:none;border-radius:999px;padding:8px 16px;font-family:Righteous}
+fieldset{border:2px solid var(--ink);border-radius:16px;margin:18px 0 0;padding:14px 16px 16px;background:#fffaf0}
+legend{font-family:Righteous;text-transform:uppercase;letter-spacing:.14em;font-size:13px;background:var(--ink);color:#fff;padding:4px 12px;border-radius:999px}
+label{display:block;font-size:13px;font-weight:500;margin:10px 0 4px}
+input[type=text],select{width:100%;padding:10px 12px;border:2px solid #cbb994;border-radius:10px;background:#fff;font:inherit;font-size:15px;color:var(--ink)}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--mint)}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.row>*{flex:1}
+.row>.narrow{flex:0 0 110px}
+.row>.auto{flex:0 0 auto}
+.sbtn{cursor:pointer;border:2px solid var(--ink);background:#fff;border-radius:10px;padding:9px 14px;font-family:Righteous;font-size:14px;white-space:nowrap;color:var(--ink)}
+.sbtn.primary{background:#1db954;border-color:#138a3d;color:#fff}
+.sbtn.red{background:var(--cherry);border-color:var(--cherry-d);color:#fff}
+.hint{font-size:12.5px;color:#6d604e;margin-top:6px;line-height:1.45}
+.resolved{font-size:13px;margin-top:6px;color:var(--mint-d);font-weight:500;min-height:1em}
+.resolved.err{color:var(--cherry)}
+.steps{margin:8px 0 0;padding-left:20px;font-size:13.5px;line-height:1.6}
+code{background:var(--cream2);border-radius:5px;padding:1px 6px;font-size:12.5px;word-break:break-all}
+.slotcfg{border-top:1px dashed #cbb994;padding-top:10px;margin-top:12px}
+.slotcfg:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.slotname{font-family:Righteous;font-size:15px;margin-top:6px}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:10px}
+.check input{width:18px;height:18px;accent-color:var(--cherry)}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);background:var(--ink);color:#fff;
+  padding:12px 20px;border-radius:14px;font-size:15px;max-width:90vw;box-shadow:0 10px 30px rgba(0,0,0,.35);
+  transition:transform .25s,opacity .25s;z-index:50;border-left:6px solid var(--mint);opacity:0;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.err{border-left-color:var(--cherry)}
+
+@media (max-width:900px){
+  .music{grid-template-columns:1fr 1fr}
+  .teams{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  main{padding:20px 16px 50px}
+  .music,.team .grid{grid-template-columns:1fr}
+  .np{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="checker"></div>
+<header>
+  <div>
+    <div class="sign">Puck Jukebox</div>
+    <div class="sub">Sekretariatets musikmaskin · sedan 1955</div>
+  </div>
+  <div class="hdr-right">
+    <div class="chip" id="chipAuth"><span class="dot" id="dotAuth"></span><span id="txtAuth">Inte inloggad</span></div>
+    <div class="chip" id="chipDev"><span class="dot" id="dotDev"></span><span id="txtDev">Ingen enhet</span></div>
+    <button class="gear" id="btnSettings">Inställningar</button>
+  </div>
+</header>
+
+<main>
+  <div class="np" id="np">
+    <div class="eq"><span></span><span></span><span></span><span></span></div>
+    <div class="np-label">Nu spelas</div>
+    <div class="np-body">
+      <div class="np-title" id="npTitle">Tyst i hallen</div>
+      <div class="np-artist" id="npArtist">Tryck på en knapp för att sätta igång</div>
+      <div class="np-bar"><i id="npBar"></i></div>
+    </div>
+  </div>
+
+  <div class="section-title"><h2>Musik</h2></div>
+  <div class="grid music" id="gridMusic"></div>
+
+  <div class="teams">
+    <div class="team home">
+      <h3><span class="pill">Hemma</span><span id="hHome">Hemmalaget</span></h3>
+      <div class="grid" id="gridHome"></div>
+    </div>
+    <div class="team away">
+      <h3><span class="pill">Borta</span><span id="hAway">Bortalaget</span></h3>
+      <div class="grid" id="gridAway"></div>
+    </div>
+  </div>
+
+  <div class="transport">
+    <button class="tbtn" id="btnFade">Tona ut <kbd>F</kbd></button>
+    <button class="tbtn stop" id="btnStop">Stopp <kbd>Mellanslag</kbd></button>
+  </div>
+  <footer>Kortkommandon: 1–7 för knapparna, F tonar ut, mellanslag stoppar. Spotify-appen gör uppspelningen – den här sidan är fjärrkontrollen.</footer>
+</main>
+
+<dialog id="dlg">
+  <div class="dlg-head"><h2>Inställningar</h2><button class="close" id="btnClose">Stäng</button></div>
+  <div class="dlg-body">
+
+    <fieldset>
+      <legend>1 · Koppla till Spotify</legend>
+      <ol class="steps">
+        <li>Gå till <b>developer.spotify.com/dashboard</b>, logga in och välj <b>Create app</b>.</li>
+        <li>Under <b>Redirect URIs</b>, lägg in exakt: <code id="redirUri"></code> <button class="sbtn" id="btnCopyRedir" style="padding:3px 10px;font-size:12px">Kopiera</button></li>
+        <li>Kryssa i <b>Web API</b>, spara, och kopiera appens <b>Client ID</b> hit.</li>
+      </ol>
+      <div class="row" style="margin-top:6px">
+        <div><label for="inClient">Client ID</label><input type="text" id="inClient" autocomplete="off" spellcheck="false" placeholder="t.ex. 8f2c…"></div>
+        <div class="auto"><button class="sbtn primary" id="btnLogin">Logga in med Spotify</button></div>
+        <div class="auto"><button class="sbtn" id="btnLogout">Logga ut</button></div>
+      </div>
+      <div class="hint">Kontot som loggar in måste ha Premium. Om någon annan än appens ägare ska logga in måste hen läggas till under <b>User Management</b> i appen.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>2 · Uppspelningsenhet</legend>
+      <div class="row">
+        <div><label for="selDev">Spotify-enhet</label><select id="selDev"><option value="">— Hämta enheter —</option></select></div>
+        <div class="auto"><button class="sbtn" id="btnDevs">Uppdatera</button></div>
+      </div>
+      <div class="hint">Starta Spotify-appen på datorn i sekretariatet så dyker den upp här. Välj den som ska spela ut i högtalarna.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>3 · Lagen</legend>
+      <div class="row">
+        <div><label for="inHome">Hemmalaget</label><input type="text" id="inHome"></div>
+        <div><label for="inAway">Bortalaget</label><input type="text" id="inAway"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>4 · Spellistor</legend>
+      <div class="row"><div class="hint" style="margin:0">Spellistorna måste ligga på ditt eget konto (eller vara samarbetslistor du är med i).</div>
+        <div class="auto"><button class="sbtn" id="btnPl">Hämta spellistor</button></div></div>
+      <div class="slotcfg">
+        <div class="slotname">Pausmusik <small>(knapp 1)</small></div>
+        <select id="selPaus"><option value="">— Välj spellista —</option></select>
+        <label class="check"><input type="checkbox" id="chkShuffle"> Blanda (starta på slumpad låt)</label>
+      </div>
+      <div class="slotcfg">
+        <div class="slotname">Mellan avblåsningar <small>(knapp 2)</small></div>
+        <select id="selAvbl"><option value="">— Välj spellista —</option></select>
+        <div class="row" style="margin-top:8px">
+          <div class="hint" id="avblInfo" style="margin:0"></div>
+          <div class="auto"><button class="sbtn" id="btnAvblReset">Börja om från låt 1</button></div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>5 · Låtar</legend>
+      <div class="hint" style="margin-top:0">Högerklicka på en låt i Spotify → <b>Dela</b> → <b>Kopiera länk till låt</b>, och klistra in här. Starttid anger var låten ska börja, t.ex. <code>0:42</code> för att hoppa direkt till refrängen.</div>
+      <div id="trackCfgs"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>6 · Flytta inställningar</legend>
+      <div class="row">
+        <div class="hint" style="margin:0">Inställningarna sparas i den här webbläsaren. Exportera och importera för att flytta dem till en annan dator.</div>
+        <div class="auto"><button class="sbtn" id="btnExport">Exportera</button></div>
+        <div class="auto"><button class="sbtn" id="btnImport">Importera</button></div>
+      </div>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    </fieldset>
+  </div>
+</dialog>
+
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= Konfiguration ================= */
+const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative';
+const REDIRECT = location.origin + location.pathname;
+const API = 'https://api.spotify.com/v1';
+
+const SLOTS = [
+  { id:'paus',     type:'playlist', key:'1', grid:'gridMusic', color:'',       kicker:'Spellista',          title:'Pausmusik' },
+  { id:'avbl',     type:'playlist', key:'2', grid:'gridMusic', color:'',       kicker:'Spellista · nästa intro', title:'Avblåsning' },
+  { id:'first',    type:'track',    key:'3', grid:'gridMusic', color:'',       kicker:'Låt',                title:'Första avblåsningen' },
+  { id:'homeGoal', type:'track',    key:'4', grid:'gridHome',  color:'cherry', kicker:'Hemma',              title:'Mål!', big:true },
+  { id:'homePen',  type:'track',    key:'5', grid:'gridHome',  color:'cherry', kicker:'Hemma',              title:'Utvisning', big:true },
+  { id:'awayGoal', type:'track',    key:'6', grid:'gridAway',  color:'mint',   kicker:'Borta',              title:'Mål', big:true },
+  { id:'awayPen',  type:'track',    key:'7', grid:'gridAway',  color:'mint',   kicker:'Borta',              title:'Utvisning', big:true },
+];
+
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} },
+};
+
+let cfg = Object.assign({ clientId:'', deviceId:'', deviceName:'', home:'Hemmalaget', away:'Bortalaget', slots:{} }, store.get('pj.cfg', {}));
+cfg.slots = cfg.slots || {};
+let tok = store.get('pj.tok', null);
+let playlists = [];
+let lastTriggered = null;
+let playerState = null;   // senaste svaret från currently-playing
+let polledAt = 0;
+
+const $ = id => document.getElementById(id);
+const save = () => store.set('pj.cfg', cfg);
+const slotCfg = id => (cfg.slots[id] = cfg.slots[id] || {});
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ================= Toast ================= */
+let toastT;
+function toast(msg, kind){
+  const t = $('toast');
+  t.textContent = msg; t.className = 'show' + (kind === 'err' ? ' err' : '');
+  clearTimeout(toastT); toastT = setTimeout(() => t.className = (kind === 'err' ? 'err' : ''), kind === 'err' ? 5200 : 2600);
+}
+
+/* ================= Inloggning (PKCE) ================= */
+function b64url(buf){
+  let s = ''; new Uint8Array(buf).forEach(b => s += String.fromCharCode(b));
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function randStr(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return b64url(a).slice(0, n); }
+
+async function login(){
+  cfg.clientId = $('inClient').value.trim(); save();
+  if (!cfg.clientId){ toast('Fyll i Client ID först', 'err'); return; }
+  if (!window.crypto || !crypto.subtle){ toast('Sidan måste köras via https (eller 127.0.0.1) för att kunna logga in', 'err'); return; }
+  const verifier = randStr(64), state = randStr(16);
+  store.set('pj.pkce', { verifier, state });
+  const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  const p = new URLSearchParams({ response_type:'code', client_id:cfg.clientId, scope:SCOPES,
+    code_challenge_method:'S256', code_challenge:challenge, redirect_uri:REDIRECT, state });
+  location.href = 'https://accounts.spotify.com/authorize?' + p;
+}
+
+function storeTok(j){
+  const prevRefresh = tok && tok.refresh;
+  tok = { access:j.access_token, refresh:j.refresh_token || prevRefresh, exp:Date.now() + (j.expires_in - 60) * 1000 };
+  store.set('pj.tok', tok);
+}
+
+async function handleRedirect(){
+  const q = new URLSearchParams(location.search);
+  if (!q.has('code') && !q.has('error')) return;
+  history.replaceState(null, '', REDIRECT);
+  if (q.has('error')){ toast('Inloggningen avbröts (' + q.get('error') + ')', 'err'); return; }
+  const pk = store.get('pj.pkce', null); store.del('pj.pkce');
+  if (!pk || pk.state !== q.get('state')){ toast('Inloggningen kunde inte verifieras – försök igen', 'err'); return; }
+  const r = await fetch('https://accounts.spotify.com/api/token', {
+    method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+    body:new URLSearchParams({ grant_type:'authorization_code', code:q.get('code'), redirect_uri:REDIRECT, client_id:cfg.clientId, code_verifier:pk.verifier })
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok){ toast('Inloggning misslyckades: ' + (j.error_description || j.error || r.status), 'err'); return; }
+  storeTok(j);
+  toast('Inloggad – nu kör vi!');
+}
+
+let refreshing = null;
+function refreshTok(){
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    if (!tok || !tok.refresh) throw Object.assign(new Error('Inte inloggad'), { status:401 });
+    const r = await fetch('https://accounts.spotify.com/api/token', {
+      method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+      body:new URLSearchParams({ grant_type:'refresh_token', refresh_token:tok.refresh, client_id:cfg.clientId })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok){ logout(true); throw Object.assign(new Error('Inloggningen har gått ut – logga in igen'), { status:401 }); }
+    storeTok(j);
+  })().finally(() => { refreshing = null; });
+  return refreshing;
+}
+
+function logout(silent){
+  tok = null; store.del('pj.tok'); updateChips();
+  if (!silent) toast('Utloggad');
+}
+
+/* ================= API ================= */
+async function api(method, path, body, retry = true){
+  if (!tok) throw Object.assign(new Error('Inte inloggad'), { status:401 });
+  if (Date.now() > tok.exp) await refreshTok();
+  const url = path.startsWith('http') ? path : API + path;
+  const r = await fetch(url, {
+    method, headers:Object.assign({ Authorization:'Bearer ' + tok.access }, body ? { 'Content-Type':'application/json' } : {}),
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (r.status === 401 && retry){ await refreshTok(); return api(method, path, body, false); }
+  const txt = await r.text();
+  let j = null; try { j = txt ? JSON.parse(txt) : null; } catch(e){}
+  if (!r.ok){
+    const e = new Error((j && j.error && (j.error.message || j.error)) || ('HTTP ' + r.status));
+    e.status = r.status; e.reason = j && j.error && j.error.reason; throw e;
+  }
+  return j;
+}
+const devQ = (pre = '?') => cfg.deviceId ? pre + 'device_id=' + encodeURIComponent(cfg.deviceId) : '';
+
+function friendly(e){
+  if (e.status === 404) return 'Hittar ingen Spotify-enhet. Öppna Spotify på datorn och välj enhet under Inställningar.';
+  if (e.status === 403) return 'Spotify nekade kommandot (kräver Premium, eller så är kontot inte tillagt i appen). ' + (e.message || '');
+  if (e.status === 429) return 'För många anrop just nu – vänta några sekunder.';
+  if (e.status === 401) return e.message || 'Logga in med Spotify först.';
+  return 'Något gick fel: ' + (e.message || e);
+}
+
+/* ================= Uppspelning ================= */
+let fade = null;
+
+async function cancelFade(){
+  if (!fade) return;
+  const f = fade; f.cancel = true; fade = null;
+  if (f.vol != null) await api('PUT', '/me/player/volume?volume_percent=' + f.vol + devQ('&')).catch(() => {});
+}
+
+async function play(body){
+  await cancelFade();
+  try {
+    await api('PUT', '/me/player/play' + devQ(), body);
+  } catch(e){
+    // Vald enhet borta? Försök med den som är aktiv just nu.
+    if (e.status === 404 && cfg.deviceId) await api('PUT', '/me/player/play', body);
+    else throw e;
+  }
+}
+
+async function trigger(id){
+  const slot = SLOTS.find(s => s.id === id);
+  const c = slotCfg(id);
+  if (!tok){ openSettings(); toast('Logga in med Spotify först', 'err'); return; }
+  if (!c.uri){ openSettings(); toast('Välj ' + (slot.type === 'playlist' ? 'spellista' : 'låt') + ' för ”' + slot.title + '” först', 'err'); return; }
+  const el = document.querySelector('[data-slot="' + id + '"]');
+  el.classList.add('busy');
+  try {
+    if (id === 'paus'){
+      const shuffle = c.shuffle !== false;
+      const body = { context_uri:c.uri };
+      if (shuffle && c.total > 1) body.offset = { position:Math.floor(Math.random() * c.total) };
+      await play(body);
+      api('PUT', '/me/player/shuffle?state=' + shuffle + devQ('&')).catch(() => {});
+    } else if (id === 'avbl'){
+      let n = c.next || 0;
+      if (c.total && n >= c.total) n = 0;
+      try {
+        await play({ context_uri:c.uri, offset:{ position:n }, position_ms:0 });
+      } catch(e){
+        if (n > 0 && (e.status === 400 || e.status === 404)){ n = 0; await play({ context_uri:c.uri, offset:{ position:0 }, position_ms:0 }); }
+        else throw e;
+      }
+      c.next = c.total ? (n + 1) % c.total : n + 1;
+      save();
+    } else {
+      await play({ uris:[c.uri], position_ms:c.startMs || 0 });
+    }
+    lastTriggered = id;
+    renderButtons();
+    setTimeout(poll, 700);
+  } catch(e){
+    toast(friendly(e), 'err');
+  } finally {
+    el.classList.remove('busy');
+  }
+}
+
+async function stop(){
+  await cancelFade();
+  try { await api('PUT', '/me/player/pause' + devQ()); }
+  catch(e){ if (e.status !== 403) toast(friendly(e), 'err'); }  // 403 = spelade redan inte
+  setTimeout(poll, 500);
+}
+
+async function fadeOut(){
+  if (fade || !tok) return;
+  const f = { cancel:false, vol:null }; fade = f;
+  try {
+    const st = await api('GET', '/me/player');
+    if (!st || !st.is_playing){ fade = null; return; }
+    const v = st.device && st.device.volume_percent;
+    const canVol = v != null && !(st.device && st.device.supports_volume === false);
+    if (canVol){
+      f.vol = v;
+      const steps = 8;
+      for (let i = 1; i <= steps; i++){
+        if (f.cancel) return;
+        await api('PUT', '/me/player/volume?volume_percent=' + Math.round(v * (1 - i / steps)) + devQ('&'));
+        await sleep(170);
+      }
+    }
+    if (f.cancel) return;
+    await api('PUT', '/me/player/pause' + devQ()).catch(() => {});
+    if (canVol) await api('PUT', '/me/player/volume?volume_percent=' + v + devQ('&'));
+  } catch(e){
+    toast(friendly(e), 'err');
+    if (f.vol != null && !f.cancel) api('PUT', '/me/player/volume?volume_percent=' + f.vol + devQ('&')).catch(() => {});
+  } finally {
+    if (fade === f) fade = null;
+    setTimeout(poll, 400);
+  }
+}
+
+/* ================= Nu spelas ================= */
+async function poll(){
+  if (!tok || document.hidden) return;
+  try {
+    playerState = await api('GET', '/me/player/currently-playing');
+    polledAt = Date.now();
+  } catch(e){ if (e.status === 401) playerState = null; }
+  renderNowPlaying(); renderButtons();
+}
+
+function currentSlot(){
+  const st = playerState;
+  if (!st || !st.item || !st.is_playing) return null;
+  const ctx = st.context && st.context.uri;
+  for (const id of ['paus','avbl']) if (ctx && cfg.slots[id] && cfg.slots[id].uri === ctx) return id;
+  const matches = SLOTS.filter(s => s.type === 'track' && cfg.slots[s.id] && cfg.slots[s.id].uri === st.item.uri).map(s => s.id);
+  if (!matches.length) return null;
+  return matches.includes(lastTriggered) ? lastTriggered : matches[0];
+}
+
+function renderNowPlaying(){
+  const st = playerState, np = $('np');
+  if (st && st.item){
+    $('npTitle').textContent = st.item.name;
+    $('npArtist').textContent = (st.item.artists || []).map(a => a.name).join(', ') || (st.item.show && st.item.show.name) || '';
+    np.classList.toggle('on', !!st.is_playing);
+  } else {
+    $('npTitle').textContent = 'Tyst i hallen';
+    $('npArtist').textContent = tok ? 'Tryck på en knapp för att sätta igång' : 'Logga in under Inställningar';
+    np.classList.remove('on');
+  }
+}
+function tickBar(){
+  const st = playerState; let pct = 0;
+  if (st && st.item && st.item.duration_ms){
+    const pos = (st.progress_ms || 0) + (st.is_playing ? Date.now() - polledAt : 0);
+    pct = Math.min(100, pos / st.item.duration_ms * 100);
+  }
+  $('npBar').style.width = pct + '%';
+  requestAnimationFrame(tickBar);
+}
+
+/* ================= Knappar ================= */
+function fmtTime(ms){ const s = Math.round((ms || 0) / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+function buildButtons(){
+  for (const s of SLOTS){
+    const b = document.createElement('button');
+    b.className = 'jb ' + s.color + (s.big ? ' big' : '');
+    b.dataset.slot = s.id;
+    b.innerHTML = '<span class="onair">♪ SPELAS</span><span class="key"></span><span class="kicker"></span><span class="title"></span><span class="meta"></span>';
+    b.querySelector('.key').textContent = s.key;
+    b.querySelector('.kicker').textContent = s.kicker;
+    b.querySelector('.title').textContent = s.title;
+    b.addEventListener('click', () => trigger(s.id));
+    $(s.grid).appendChild(b);
+  }
+}
+
+function renderButtons(){
+  const cur = currentSlot();
+  for (const s of SLOTS){
+    const b = document.querySelector('[data-slot="' + s.id + '"]');
+    const c = cfg.slots[s.id] || {};
+    const meta = b.querySelector('.meta');
+    b.classList.toggle('empty', !c.uri);
+    b.classList.toggle('playing', cur === s.id);
+    if (s.grid === 'gridHome') b.querySelector('.kicker').textContent = cfg.home || 'Hemma';
+    if (s.grid === 'gridAway') b.querySelector('.kicker').textContent = cfg.away || 'Borta';
+    if (!c.uri){ meta.textContent = 'Inte inställd'; continue; }
+    if (s.id === 'avbl'){
+      const n = c.total ? ((c.next || 0) % c.total) + 1 : (c.next || 0) + 1;
+      meta.textContent = c.name + ' · nästa: låt ' + n + (c.total ? ' av ' + c.total : '');
+    } else if (s.type === 'playlist'){
+      meta.textContent = c.name + (c.shuffle !== false ? ' · blandat' : '');
+    } else {
+      meta.textContent = c.name + (c.artist ? ' – ' + c.artist : '') + (c.startMs ? ' · från ' + fmtTime(c.startMs) : '');
+    }
+  }
+  $('hHome').textContent = cfg.home || 'Hemmalaget';
+  $('hAway').textContent = cfg.away || 'Bortalaget';
+}
+
+function updateChips(){
+  $('dotAuth').className = 'dot ' + (tok ? 'ok' : 'bad');
+  $('txtAuth').textContent = tok ? 'Spotify anslutet' : 'Inte inloggad';
+  $('dotDev').className = 'dot ' + (cfg.deviceId ? 'ok' : '');
+  $('txtDev').textContent = cfg.deviceName || 'Ingen enhet vald';
+}
+
+/* ================= Inställningar ================= */
+const dlg = $('dlg');
+function openSettings(){
+  fillSettings();
+  if (!dlg.open) dlg.showModal();
+  if (tok){ loadDevices(true); if (!playlists.length) loadPlaylists(true); }
+}
+
+function fillSettings(){
+  $('redirUri').textContent = REDIRECT;
+  $('inClient').value = cfg.clientId;
+  $('inHome').value = cfg.home; $('inAway').value = cfg.away;
+  $('chkShuffle').checked = (cfg.slots.paus || {}).shuffle !== false;
+  fillPlaylistSelects();
+  updateAvblInfo();
+  const wrap = $('trackCfgs'); wrap.innerHTML = '';
+  for (const s of SLOTS.filter(x => x.type === 'track')){
+    const c = cfg.slots[s.id] || {};
+    const team = s.grid === 'gridHome' ? ' (' + (cfg.home || 'hemma') + ')' : s.grid === 'gridAway' ? ' (' + (cfg.away || 'borta') + ')' : '';
+    const d = document.createElement('div'); d.className = 'slotcfg';
+    d.innerHTML =
+      '<div class="slotname"></div>' +
+      '<div class="row"><div><label>Spotify-länk</label><input type="text" class="tl" spellcheck="false" placeholder="https://open.spotify.com/track/…"></div>' +
+      '<div class="narrow"><label>Starttid</label><input type="text" class="ts" placeholder="0:00"></div>' +
+      '<div class="auto"><button class="sbtn ttest">Testa</button></div></div>' +
+      '<div class="resolved"></div>';
+    d.querySelector('.slotname').textContent = s.title.replace('!','') + team + ' – knapp ' + s.key;
+    const tl = d.querySelector('.tl'), ts = d.querySelector('.ts'), res = d.querySelector('.resolved');
+    tl.value = c.link || (c.uri ? 'https://open.spotify.com/track/' + c.uri.split(':').pop() : '');
+    ts.value = c.startMs ? fmtTime(c.startMs) : '';
+    res.textContent = c.uri ? '♪ ' + c.name + (c.artist ? ' – ' + c.artist : '') + (c.dur ? ' (' + fmtTime(c.dur) + ')' : '') : '';
+    tl.addEventListener('change', () => resolveTrack(s.id, tl.value, res));
+    ts.addEventListener('change', () => {
+      const ms = parseTime(ts.value);
+      if (ms == null){ ts.value = ''; slotCfg(s.id).startMs = 0; }
+      else { slotCfg(s.id).startMs = ms; ts.value = fmtTime(ms); }
+      save(); renderButtons();
+    });
+    d.querySelector('.ttest').addEventListener('click', () => trigger(s.id));
+    wrap.appendChild(d);
+  }
+}
+
+function parseTime(v){
+  v = (v || '').trim(); if (!v) return null;
+  const m = v.match(/^(\d+):(\d{1,2})$/);
+  if (m) return (parseInt(m[1]) * 60 + parseInt(m[2])) * 1000;
+  if (/^\d+(\.\d+)?$/.test(v)) return Math.round(parseFloat(v) * 1000);
+  return null;
+}
+function parseTrackId(v){
+  v = (v || '').trim();
+  let m = v.match(/open\.spotify\.com\/(?:intl-[a-z-]+\/)?track\/([A-Za-z0-9]{22})/) || v.match(/spotify:track:([A-Za-z0-9]{22})/) || v.match(/^([A-Za-z0-9]{22})$/);
+  return m ? m[1] : null;
+}
+
+async function resolveTrack(id, value, res){
+  const c = slotCfg(id);
+  if (!value.trim()){ Object.assign(c, { uri:'', name:'', artist:'', link:'' }); save(); renderButtons(); res.textContent = ''; return; }
+  const tid = parseTrackId(value);
+  res.classList.remove('err');
+  if (!tid){ res.textContent = 'Det där ser inte ut som en låtlänk från Spotify.'; res.classList.add('err'); return; }
+  c.uri = 'spotify:track:' + tid; c.link = value.trim(); c.name = c.name || 'Låt'; save();
+  res.textContent = 'Hämtar…';
+  try {
+    const t = await api('GET', '/tracks/' + tid);
+    Object.assign(c, { name:t.name, artist:(t.artists || []).map(a => a.name).join(', '), dur:t.duration_ms });
+    save();
+    res.textContent = '♪ ' + c.name + ' – ' + c.artist + ' (' + fmtTime(c.dur) + ')';
+  } catch(e){
+    c.name = 'Låt ' + tid.slice(0, 6); c.artist = ''; save();
+    res.textContent = 'Sparad, men kunde inte hämta låtnamnet (' + friendly(e) + ')'; res.classList.add('err');
+  }
+  renderButtons();
+}
+
+async function loadPlaylists(quiet){
+  try {
+    let next = '/me/playlists?limit=50', all = [];
+    while (next){
+      const j = await api('GET', next);
+      for (const p of (j.items || [])){
+        if (!p) continue;
+        const tr = p.items || p.tracks;
+        all.push({ uri:p.uri, name:p.name, total:tr && typeof tr.total === 'number' ? tr.total : null });
+      }
+      next = j.next;
+    }
+    playlists = all;
+    // Uppdatera antal låtar för valda listor
+    for (const id of ['paus','avbl']){
+      const c = cfg.slots[id]; if (!c || !c.uri) continue;
+      const p = playlists.find(x => x.uri === c.uri);
+      if (p){ c.total = p.total; c.name = p.name; }
+    }
+    save(); fillPlaylistSelects(); updateAvblInfo(); renderButtons();
+    if (!quiet) toast(playlists.length + ' spellistor hämtade');
+  } catch(e){ if (!quiet) toast(friendly(e), 'err'); }
+}
+
+function fillPlaylistSelects(){
+  for (const [selId, slotId] of [['selPaus','paus'], ['selAvbl','avbl']]){
+    const sel = $(selId), c = cfg.slots[slotId] || {};
+    sel.innerHTML = '';
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = '— Välj spellista —'; sel.appendChild(o0);
+    const list = playlists.slice();
+    if (c.uri && !list.find(p => p.uri === c.uri)) list.unshift({ uri:c.uri, name:c.name, total:c.total });
+    for (const p of list){
+      const o = document.createElement('option'); o.value = p.uri;
+      o.textContent = p.name + (p.total != null ? ' (' + p.total + ' låtar)' : '');
+      sel.appendChild(o);
+    }
+    sel.value = c.uri || '';
+  }
+}
+
+function onPlaylistChange(slotId, sel){
+  const c = slotCfg(slotId);
+  const p = playlists.find(x => x.uri === sel.value);
+  if (!sel.value){ Object.assign(c, { uri:'', name:'', total:null, next:0 }); }
+  else if (p && p.uri !== c.uri){ Object.assign(c, { uri:p.uri, name:p.name, total:p.total, next:0 }); }
+  save(); updateAvblInfo(); renderButtons();
+}
+
+function updateAvblInfo(){
+  const c = cfg.slots.avbl || {};
+  $('avblInfo').textContent = c.uri
+    ? 'Nästa tryck spelar låt ' + ((c.total ? (c.next || 0) % c.total : (c.next || 0)) + 1) + (c.total ? ' av ' + c.total : '') + ' från början, sedan stegar den vidare.'
+    : 'Varje tryck spelar nästa låt i listan från början (för introt).';
+}
+
+async function loadDevices(quiet){
+  try {
+    const j = await api('GET', '/me/player/devices');
+    const devs = (j && j.devices) || [];
+    const sel = $('selDev'); sel.innerHTML = '';
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = devs.length ? '— Välj enhet —' : '— Ingen enhet hittad, starta Spotify —'; sel.appendChild(o0);
+    for (const d of devs){
+      const o = document.createElement('option'); o.value = d.id;
+      o.textContent = d.name + ' (' + d.type + ')' + (d.is_active ? ' · aktiv' : ''); sel.appendChild(o);
+    }
+    if (cfg.deviceId && !devs.find(d => d.id === cfg.deviceId)){
+      const o = document.createElement('option'); o.value = cfg.deviceId; o.textContent = (cfg.deviceName || 'Sparad enhet') + ' (inte igång just nu)'; sel.appendChild(o);
+    }
+    sel.value = cfg.deviceId || '';
+    if (!cfg.deviceId){
+      const pick = devs.find(d => d.type === 'Computer') || devs.find(d => d.is_active);
+      if (pick){ cfg.deviceId = pick.id; cfg.deviceName = pick.name; save(); sel.value = pick.id; updateChips(); }
+    }
+    if (!quiet) toast(devs.length + ' enhet(er) hittade');
+  } catch(e){ if (!quiet) toast(friendly(e), 'err'); }
+}
+
+/* ================= Händelser ================= */
+$('btnSettings').addEventListener('click', openSettings);
+$('btnClose').addEventListener('click', () => dlg.close());
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+$('btnLogin').addEventListener('click', login);
+$('btnLogout').addEventListener('click', () => logout(false));
+$('inClient').addEventListener('change', e => { cfg.clientId = e.target.value.trim(); save(); });
+$('btnCopyRedir').addEventListener('click', () => { navigator.clipboard && navigator.clipboard.writeText(REDIRECT).then(() => toast('Kopierad')); });
+$('btnDevs').addEventListener('click', () => loadDevices(false));
+$('selDev').addEventListener('change', e => {
+  const o = e.target.selectedOptions[0];
+  cfg.deviceId = e.target.value; cfg.deviceName = e.target.value ? o.textContent.replace(/ \(.*$/, '') : ''; save(); updateChips();
+});
+$('inHome').addEventListener('input', e => { cfg.home = e.target.value; save(); renderButtons(); });
+$('inAway').addEventListener('input', e => { cfg.away = e.target.value; save(); renderButtons(); });
+$('btnPl').addEventListener('click', () => loadPlaylists(false));
+$('selPaus').addEventListener('change', e => onPlaylistChange('paus', e.target));
+$('selAvbl').addEventListener('change', e => onPlaylistChange('avbl', e.target));
+$('chkShuffle').addEventListener('change', e => { slotCfg('paus').shuffle = e.target.checked; save(); renderButtons(); });
+$('btnAvblReset').addEventListener('click', () => { slotCfg('avbl').next = 0; save(); updateAvblInfo(); renderButtons(); toast('Avblåsningslistan börjar om från låt 1'); });
+$('btnStop').addEventListener('click', stop);
+$('btnFade').addEventListener('click', fadeOut);
+
+$('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'puck-jukebox-installningar.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$('btnImport').addEventListener('click', () => $('fileImport').click());
+$('fileImport').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (!j || typeof j !== 'object' || !j.slots) throw new Error('fel format');
+    cfg = Object.assign({ clientId:'', deviceId:'', deviceName:'', home:'Hemmalaget', away:'Bortalaget', slots:{} }, j);
+    save(); fillSettings(); renderButtons(); updateChips(); toast('Inställningar importerade');
+  } catch(err){ toast('Kunde inte läsa filen', 'err'); }
+  e.target.value = '';
+});
+
+document.addEventListener('keydown', e => {
+  if (dlg.open || e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+  const s = SLOTS.find(x => x.key === e.key);
+  if (s){
+    e.preventDefault();
+    const b = document.querySelector('[data-slot="' + s.id + '"]');
+    b.classList.add('pressed'); setTimeout(() => b.classList.remove('pressed'), 140);
+    trigger(s.id); return;
+  }
+  if (e.key === ' ' || e.code === 'Space'){ e.preventDefault(); stop(); return; }
+  if (e.key === 'f' || e.key === 'F'){ e.preventDefault(); fadeOut(); }
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
+
+/* ================= Start ================= */
+(async () => {
+  buildButtons(); renderButtons(); updateChips(); renderNowPlaying();
+  requestAnimationFrame(tickBar);
+  try { await handleRedirect(); } catch(e){ toast(friendly(e), 'err'); }
+  updateChips();
+  if (tok){
+    poll();
+    loadPlaylists(true);
+    if (!cfg.deviceId) loadDevices(true);
+  } else if (!cfg.clientId){
+    openSettings();
+  }
+  setInterval(poll, 3000);
+})();
+})();
+</script>
+</body>
+</html>
