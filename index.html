@@ -435,6 +435,7 @@ async function api(method, path, body, retry = true){
 const devQ = (pre = '?') => cfg.deviceId ? pre + 'device_id=' + encodeURIComponent(cfg.deviceId) : '';
 
 function friendly(e){
+  if (e.noDevice) return e.message;
   if (e.status === 404) return 'Hittar ingen Spotify-enhet. Öppna Spotify på datorn och välj enhet under Inställningar.';
   if (e.status === 403) return 'Spotify nekade kommandot (kräver Premium, eller så är kontot inte tillagt i appen). ' + (e.message || '');
   if (e.status === 429) return 'För många anrop just nu – vänta några sekunder.';
@@ -456,9 +457,15 @@ async function play(body){
   try {
     await api('PUT', '/me/player/play' + devQ(), body);
   } catch(e){
-    // Vald enhet borta? Försök med den som är aktiv just nu.
-    if (e.status === 404 && cfg.deviceId) await api('PUT', '/me/player/play', body);
-    else throw e;
+    // Vald enhet borta (t.ex. stängd webbspelarflik)? Byt automatiskt till en enhet som finns.
+    if (e.status !== 404) throw e;
+    const j = await api('GET', '/me/player/devices');
+    const devs = ((j && j.devices) || []).filter(d => !d.is_restricted);
+    const pick = devs.find(d => d.is_active) || devs.find(d => d.type === 'Computer' && !/web player/i.test(d.name)) || devs[0];
+    if (!pick) throw Object.assign(new Error('Ingen Spotify-enhet är igång. Starta Spotify-appen på datorn.'), { status:404, noDevice:true });
+    cfg.deviceId = pick.id; cfg.deviceName = pick.name; save(); updateChips();
+    toast('Bytte enhet till ' + pick.name);
+    await api('PUT', '/me/player/play?device_id=' + encodeURIComponent(pick.id), body);
   }
 }
 
